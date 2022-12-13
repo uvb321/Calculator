@@ -1,12 +1,18 @@
-from Utils import *
+from Utils import Calculate
 
+QUIT = 'quit'
 
 def Run_Calculator():
-    """
-    this function will contain the main loop of the calculator
-    """
-    pass
+    expression = input("please enter a math expression:\n ")
+    while expression != QUIT:
+        print("------------------------------------------")
+        num = Calculate(expression)
+        print(f"the result is: {num}")
+        print("------------------------------------------\n\n\n")
+        expression = input("please enter a math expression:\n ")
 
+
+    print("closing Calculator")
 
 def main():
     pass
