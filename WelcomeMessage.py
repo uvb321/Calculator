@@ -17,7 +17,8 @@ def Welcome_Message():
           "@ - average, between two operands x@y\n"
           "~ - not, to the left of the operand ~x\n"
           "! - assembly, to the right of the operand x!\n"
-          "# - adding the digits of the num, to the right of the operand x#\n")
+          "# - adding the digits of the num, to the right of the operand x#\n"
+          "Lastly, to quit please enter the word (quit)\n")
 
 
 def main():
