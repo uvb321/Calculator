@@ -226,7 +226,7 @@ def Turn_List_Order_To_Postfix(lst: list) -> list:
 def Calculate_Postfix(lst: list):
     """
     this func turns the postfix expression into a number
-    :param data: data is the postfix expression
+    :param lst: lst is the postfix expression
     :return: returns a number from the postfix expression
     """
     i = 0
