@@ -15,9 +15,81 @@ OPERATORS_LIST = ['+', '-', '*', '/', '^', '%', '$', '&', '@', '~', '!', '#']
 OPERATOR_FOR_1_OPERAND = ['~', '!', '#']
 
 
-def Reduce_Minuses(data: list) -> list:
-    # todo: complete this function
-    pass
+def Make_Decimal_Values(lst: list) -> list:
+    """
+    this function gets a
+    :param lst:
+    :return:
+    """
+    i = 0
+    while i < len(lst):
+        if lst[i] == '.':
+            lst.pop(i)
+            before_point = lst.pop(i - 1)
+            after_point = lst.pop(i - 1)
+            i -= 1
+            new_num = float(str(before_point) + '.' + str(after_point))
+            lst.insert(i, new_num)
+        i += 1
+
+    return lst
+
+
+def Reduce_And_Correct_Minuses(lst: list) -> list:
+    """
+    if there is an even amount of minuses in a row than the func deletes them and turns it into a '+',
+    but if there is an odd amount of minuses the func also deletes them but insert a single '-' instead.
+    this func uses two loop, the main one is to pass all of the values in the list and check if they are a '-', and if
+    so it enters the second loop that counts how many minuses are in a row and deletes them.
+    even though there is a loop inside of a loop the runtime complexity is O(N)
+    :param lst: gets a list in regular order with many possibles minuses
+    :return: returns the same list with compressed minuses
+    """
+    minus_cnt = 0
+    minus_start_index = 0
+    i = 0
+
+    for item in lst:
+
+        if item == '-':
+            minus_cnt = 1
+            minus_start_index = i
+
+            lst.pop(minus_start_index)
+
+            while len(lst) > minus_start_index and lst[minus_start_index] == '-':
+                lst.pop(minus_start_index)
+                minus_cnt += 1
+
+            # if there is an even amount of minuses
+            if minus_cnt % 2 == 0:
+                # check if there is an operator before the start of the minuses, if so do nothing
+                if not Is_Num(lst[minus_start_index - 1]):
+                    pass  # deletes the minuses
+
+                # else there is a number
+                else:
+                    lst.insert(minus_start_index, '+')
+
+            # else there is an odd amount of minuses
+            else:
+
+                # check if there is an operator before the start of the minuses, or the minus is the first item
+                if minus_start_index - 1 < 0 or not Is_Num(lst[minus_start_index - 1]):
+                    # now its an unary minus, meaning it needs to be attached to the next expression
+                    # it will be handled in the Turn_List_Order_To_Postfix function
+                    if lst[minus_start_index] == '(':
+                        lst.insert(minus_start_index, '-')
+
+                    else:
+                        lst[minus_start_index] = -lst[minus_start_index]
+
+                # else there is a number
+                else:
+                    lst.insert(minus_start_index, '-')
+        i += 1
+
+    return lst
 
 
 def From_String_To_Num(data: str) -> float:
@@ -53,7 +125,7 @@ def Is_Num(item) -> bool:
     return type(item) is int or type(item) is float
 
 
-def Turn_String_To_List(data) -> list:
+def Turn_String_To_List(data: str) -> list:
     """
     this func runs on each character in the string and appends it to a list, if a sequence of chars represents
     a number than the func appends the real value of the number to the list and not its chars
@@ -91,22 +163,34 @@ def Turn_String_To_List(data) -> list:
 
 def Turn_List_Order_To_Postfix(lst: list) -> list:
     """
-    in this func i turn the list's order to postfix and i use two help lists that one of them will operate as a stack.
-    one stack will be for the operators and the other would be for the complete postfix expression
+    this function  turns the list's order to postfix and it uses two help lists
+    that one of them will operate as a stack.
+    one stack will be for the operators and the other would be for the complete postfix expression.
+    this function also handles a situation where there is an unary minus
     :param lst: gets a list that contains a regular order of the math expression
     :return: returns a list with the math expression in a postfix order
     """
     operators_stk = []
     new_lst = []
 
+    minus_cnt = 0
+    i = 0
     for item in lst:
+
         # if the item is a number append to the new list
         if Is_Num(item):
             new_lst.append(item)
 
         # else the item is an operator or ()
         else:
-            if item == '(':
+            # if there was an operator before the minus, its an unary minus and needs to be handled with
+            if item == '-' and not Is_Num(lst[i - 1]):
+                # appending 0 because 0 - expression = -expression
+                new_lst.append(0)
+                minus_cnt += 1
+
+
+            elif item == '(':
                 operators_stk.append(item)
 
             elif item == ')':
@@ -114,6 +198,12 @@ def Turn_List_Order_To_Postfix(lst: list) -> list:
                 while operator != '(':
                     new_lst.append(operator)
                     operator = operators_stk.pop()
+
+                if minus_cnt > 0:
+                    new_lst.append('-')
+                    minus_cnt -= 1
+
+
 
             # if the item is not ( or ) than the item must be an operator
             else:
@@ -124,6 +214,7 @@ def Turn_List_Order_To_Postfix(lst: list) -> list:
                     new_lst.append(operators_stk.pop())
 
                 operators_stk.append(item)
+        i += 1
 
     # at the end just append all of the remaining operators to the new list
     while len(operators_stk) > 0:
@@ -132,7 +223,7 @@ def Turn_List_Order_To_Postfix(lst: list) -> list:
     return new_lst
 
 
-def Calculate_Postfix(data: list):
+def Calculate_Postfix(lst: list):
     """
     this func turns the postfix expression into a number
     :param data: data is the postfix expression
@@ -140,27 +231,31 @@ def Calculate_Postfix(data: list):
     """
     i = 0
     # if len data is 1 than the remaining item must be the answer
-    while len(data) > 1:
+    while len(lst) > 1:
         # if item is operator
-        if not Is_Num(data[i]):
-            operator = data.pop(i)
+        if not Is_Num(lst[i]):
+            operator = lst.pop(i)
 
             if operator in OPERATOR_FOR_1_OPERAND:
-                pass
-                # todo: needs to be completed
+                num1 = lst.pop(i - 1)
+                i -= 1
+
+                num = OPERATORS_FUNCS[operator](num1)
+                lst.insert(i, num)
 
             # if entered here the operator work with 2 operands
             else:
-                num2 = data.pop(i - 1)
-                num1 = data.pop(i - 2)
+                num2 = lst.pop(i - 1)
+                num1 = lst.pop(i - 2)
                 i -= 2
 
                 num = OPERATORS_FUNCS[operator](num1, num2)
-                data.insert(i, num)
+                lst.insert(i, num)
 
         i += 1
 
-    return data[0]
+    # returning the result of the math expression
+    return lst[0]
 
 
 def Calculate(data: str):
@@ -176,7 +271,11 @@ def Calculate(data: str):
     # right now we have a list that is organized
     lst = Turn_String_To_List(data)
 
-    #lst = Reduce_Minuses(lst)
+    # after this line all of the minuses will be compressed to one '-' or turned into a '+'
+    lst = Reduce_And_Correct_Minuses(lst)
+
+    # after this line the list will return the numbers with decimal points
+    lst = Make_Decimal_Values(lst)
 
     # now i turn this list to a list of with postfix order, so i don't have to deal with ()
     lst_in_postfix = Turn_List_Order_To_Postfix(lst)
