@@ -19,11 +19,3 @@ def Welcome_Message():
           "! - assembly, to the right of the operand x!\n"
           "# - adding the digits of the num, to the right of the operand x#\n"
           "Lastly, to quit please enter the word (quit)\n")
-
-
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

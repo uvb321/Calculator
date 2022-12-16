@@ -1,10 +1,12 @@
 from Utils import Calculate
+from Validation import Validate
 
 QUIT = 'quit'
 
 def Run_Calculator():
     expression = input("please enter a math expression:\n ")
     while expression != QUIT:
+        Validate(expression)
         print("------------------------------------------")
         num = Calculate(expression)
         print(f"the result is: {num}")
@@ -14,9 +16,3 @@ def Run_Calculator():
 
     print("closing Calculator")
 
-def main():
-    pass
-
-
-if __name__ == '__main__':
-    main()

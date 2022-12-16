@@ -63,8 +63,9 @@ def Reduce_And_Correct_Minuses(lst: list) -> list:
 
             # if there is an even amount of minuses
             if minus_cnt % 2 == 0:
-                # check if there is an operator before the start of the minuses, if so do nothing
-                if not Is_Num(lst[minus_start_index - 1]):
+                # check if there is an operator or () before the start of the minuses
+                # or the minuses are at the start of the list, if so do nothing
+                if not Is_Num(lst[minus_start_index - 1]) or minus_start_index - 1 < 0:
                     pass  # deletes the minuses
 
                 # else there is a number
@@ -73,20 +74,13 @@ def Reduce_And_Correct_Minuses(lst: list) -> list:
 
             # else there is an odd amount of minuses
             else:
-
-                # check if there is an operator before the start of the minuses, or the minus is the first item
-                if minus_start_index - 1 < 0 or not Is_Num(lst[minus_start_index - 1]):
-                    # now its an unary minus, meaning it needs to be attached to the next expression
-                    # it will be handled in the Turn_List_Order_To_Postfix function
-                    if lst[minus_start_index] == '(':
-                        lst.insert(minus_start_index, '-')
-
-                    else:
-                        lst[minus_start_index] = -lst[minus_start_index]
-
-                # else there is a number
+                # if there is an operator or '(' before the minus and a number after it
+                if (lst[minus_start_index - 1] in OPERATORS_LIST or lst[minus_start_index - 1] == '(') and Is_Num(
+                        lst[minus_start_index]):
+                    lst[minus_start_index] = -lst[minus_start_index]
                 else:
                     lst.insert(minus_start_index, '-')
+
         i += 1
 
     return lst
@@ -173,8 +167,10 @@ def Turn_List_Order_To_Postfix(lst: list) -> list:
     operators_stk = []
     new_lst = []
 
-    minus_cnt = 0
+    # helpful index for the loop
     i = 0
+    # stack to help with unary minuses of expressions in ()
+    minus_stk = []
     for item in lst:
 
         # if the item is a number append to the new list
@@ -183,15 +179,21 @@ def Turn_List_Order_To_Postfix(lst: list) -> list:
 
         # else the item is an operator or ()
         else:
-            # if there was an operator before the minus, its an unary minus and needs to be handled with
-            if item == '-' and not Is_Num(lst[i - 1]):
-                # appending 0 because 0 - expression = -expression
+            # if there is a minus and the item after is a '(' and the item before it is an operator, or the minuses
+            # start the expression
+            # than it needs to be attached to the () that comes after it
+            if item == '-' and lst[i + 1] == '(' and ((i - 1 < 0) or (i - 1 >= 0 and lst[i - 1] in OPERATORS_LIST)):
+                # at this point the only times where a special action needs to occur is in 2 situations
+                # number 1: if the minuses are at the beginning.
+                # number 2: if there is an operator before the minus
+                # pushing 0 to later do 0-expression
                 new_lst.append(0)
-                minus_cnt += 1
-
+                minus_stk.append('-')
 
             elif item == '(':
                 operators_stk.append(item)
+                # pushing '(' to the minus stack to know which of the () has a minus in front of it
+                minus_stk.append('(')
 
             elif item == ')':
                 operator = operators_stk.pop()
@@ -199,11 +201,13 @@ def Turn_List_Order_To_Postfix(lst: list) -> list:
                     new_lst.append(operator)
                     operator = operators_stk.pop()
 
-                if minus_cnt > 0:
+                # popping out the '('
+                minus_stk.pop()
+                if len(minus_stk) > 0 and minus_stk[-1] == '-':
+                    # adding a minus
                     new_lst.append('-')
-                    minus_cnt -= 1
-
-
+                    # deleting the minus so it won't do it again
+                    minus_stk.pop()
 
             # if the item is not ( or ) than the item must be an operator
             else:
