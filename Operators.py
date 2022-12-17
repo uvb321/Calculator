@@ -1,4 +1,5 @@
 from math import pow
+from Exceptions import *
 
 """
 this module contains all of the classes of the operators and the code of their functions
@@ -86,6 +87,8 @@ class Div(Operator):
 
     # this func gets two numbers and divides the first with the second and returns the result
     def Calculate_2_Operands(num1: float, num2: float) -> float:
+        if num2 == 0:
+            raise DivisionByZeroException("can't divide by zero")
         return num1 / num2
 
 
@@ -203,8 +206,23 @@ class Assembly(Operator):
     ORDER = 6
 
     # this func gets a number and returns the  assembly of it
-    # works only on a positive WHOLE number!!!
+    # works only on a positive natural number
     def Calculate_1_Operand(num: int) -> int:
+
+        if type(num) == float:
+            # getting the number after the decimal point
+            after_decimal_point = int(str(num).split('.')[-1])
+
+            # checking if the number is not natural
+            if after_decimal_point > 0:
+                raise FloatNumberException("! can't get a real number as operand")
+
+        # checking is the number is negative
+        if num < 0:
+            raise NegativeNumberException("! can't get a negative number as operand")
+
+        # casting
+        num = int(num)
         sum = 1
         # loop until the num is 1
         while num > 1:
@@ -229,12 +247,18 @@ class AddDigits(Operator):
     ORDER = 6
 
     # this func gets a num and returns the sum of its digits
-    # works only on a positive number!!!
+    # works only on a positive number
     def Calculate_1_Operand(num: float) -> int:
+        # checking if the number is negative
+        if num < 0:
+            raise NegativeNumberException("# can't get a negative number")
+
         # this line will put in places how many digits there are after the decimal point
         places = len(str(num).split('.')[-1])
+
         # this line will make num an int with all of its digits
-        num = int(num * pow(10, places))
+        for i in range(places):
+            num *= 10
 
         sum = 0
         while num:
