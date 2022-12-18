@@ -1,10 +1,8 @@
-from Operators import *
-from Exceptions import *
-from Utils import Is_Num
+from Utils import is_num
 from Dicts_And_Lists import *
 
 
-def Turn_List_Order_To_Postfix(lst: list) -> list:
+def turn_list_order_to_postfix(lst: list) -> list:
     """
     this function  turns the list's order to postfix and it uses two help lists
     that one of them will operate as a stack.
@@ -23,18 +21,30 @@ def Turn_List_Order_To_Postfix(lst: list) -> list:
     for item in lst:
 
         # if the item is a number append to the new list
-        if Is_Num(item):
+        if is_num(item):
             new_lst.append(item)
 
         # else the item is an operator or ()
         else:
-
-            # if there is a minus and the item after is a '(' and the item before it is an operator, or the minuses
-            # start the expression
+            # if the item is '-' and the item after it is a '~' it's a special case
+            if item == '-' and index + 1 < len(lst) and lst[index + 1] == '~':
+                # if the minuses are at the start of the expression than push 0
+                if index == 0:
+                    new_lst.append(0)
+                # if the item before the minuses is a number or a ')' than don't push
+                if is_num(lst[index-1]) or lst[index-1] == ')':
+                    pass
+                # else push
+                else:
+                    new_lst.append(0)
+            # if there is a minus and the item after is a '(' and the item before it is a 2 operands
+            # operator, or the minuses start the expression
             # than it needs to be attached to the () that comes after it
             if item == '-' and index + 1 < len(lst) and lst[index + 1] == '(' \
                     and ((index - 1 < 0) or (
-                    index - 1 >= 0 and (lst[index - 1] in OPERATORS_LIST or lst[index - 1] == '('))):
+                    index - 1 >= 0 and (
+                    (lst[index - 1] in OPERATORS_LIST and lst[index - 1] not in OPERATOR_FOR_1_OPERAND)
+                    or lst[index - 1] == '('))):
                 # at this point the only times where a special action needs to occur is in 2 situations
                 # number 1: if the minuses are at the beginning.
                 # number 2: if there is an operator before the minus
@@ -78,7 +88,7 @@ def Turn_List_Order_To_Postfix(lst: list) -> list:
     return new_lst
 
 
-def Calculate_Postfix(lst: list):
+def calculate_postfix(lst: list):
     """
     this func turns the postfix expression into a number
     :param lst: lst is the postfix expression
@@ -90,14 +100,14 @@ def Calculate_Postfix(lst: list):
         # check if the index is bigger than the length of the list
         # if so it means that there are more operands than operators to do actions with
         if index == len(lst):
-            raise GotNoOperatorException("not enough operators to do actions with")
+            raise OperatorException("not enough operators to do actions with")
         # if item is operator
-        if not Is_Num(lst[index]):
+        if not is_num(lst[index]):
             operator = lst.pop(index)
 
             if operator in OPERATOR_FOR_1_OPERAND:
                 if index - 1 < 0:
-                    raise NotEnoughOperandsForActionException(f"the operator {operator} did not get any operands")
+                    raise OperatorException(f"the operator {operator} did not get any operands")
                 num1 = lst.pop(index - 1)
                 index -= 1
 
@@ -107,7 +117,7 @@ def Calculate_Postfix(lst: list):
             # if entered here the operator work with 2 operands
             else:
                 if index - 2 < 0:
-                    raise NotEnoughOperandsForActionException(f"the operator {operator} takes 2 operands")
+                    raise OperatorException(f"the operator {operator} takes 2 operands")
                 num2 = lst.pop(index - 1)
                 num1 = lst.pop(index - 2)
                 index -= 2
@@ -121,7 +131,7 @@ def Calculate_Postfix(lst: list):
     return lst[0]
 
 
-def Calculate(lst: list):
+def calculate(lst: list):
     """
     this function gathers all of the other functions in this file and uses them by order to turn a list that
     represents a math expression into a number
@@ -130,6 +140,6 @@ def Calculate(lst: list):
     """
 
     # now i turn this list to a list of with postfix order, so i don't have to deal with ()
-    lst_in_postfix = Turn_List_Order_To_Postfix(lst)
+    lst_in_postfix = turn_list_order_to_postfix(lst)
 
-    return Calculate_Postfix(lst_in_postfix)
+    return calculate_postfix(lst_in_postfix)

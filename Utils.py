@@ -1,14 +1,11 @@
-from Exceptions import *
-from Operators import *
 from Dicts_And_Lists import *
 
 
-
-def Make_Decimal_Values(lst: list) -> list:
+def make_decimal_values(lst: list) -> list:
     """
-    this function gets a
-    :param lst:
-    :return:
+    this function gets a list and turns all of the float numbers to their real value
+    :param lst: gets a list that represents a math expression
+    :return: returns the same list with decimal numbers
     """
     index = 0
     while index < len(lst):
@@ -20,14 +17,14 @@ def Make_Decimal_Values(lst: list) -> list:
             try:
                 new_num = float(str(before_point) + '.' + str(after_point))
             except ValueError:
-                raise DotError("the dots are not in a valid order")
+                raise DotException("the dots are not in a valid order")
             lst.insert(index, new_num)
         index += 1
 
     return lst
 
 
-def Reduce_And_Correct_Minuses(lst: list) -> list:
+def reduce_and_correct_minuses(lst: list) -> list:
     """
     if there is an even amount of minuses in a row than the func deletes them and turns it into a '+',
     but if there is an odd amount of minuses the func also deletes them but insert a single '-' instead.
@@ -37,8 +34,7 @@ def Reduce_And_Correct_Minuses(lst: list) -> list:
     :param lst: gets a list in regular order with many possibles minuses
     :return: returns the same list with compressed minuses
     """
-    minus_cnt = 0
-    minus_start_index = 0
+
     index = 0
 
     for item in lst:
@@ -54,6 +50,9 @@ def Reduce_And_Correct_Minuses(lst: list) -> list:
                 lst.pop(minus_start_index)
                 minus_cnt += 1
 
+            # check if the minuses end the expression and if so raise an exception
+            if minus_start_index >= len(lst):
+                raise OperatorException("- can't be at the end of an expression")
             after = lst[minus_start_index]
             prev = lst[minus_start_index - 1]
 
@@ -64,11 +63,16 @@ def Reduce_And_Correct_Minuses(lst: list) -> list:
                 if minus_start_index == 0 or prev == '(':
                     pass
 
-                # if the item after is not a number and it's not a '('
-                elif not Is_Num(after) and after != '(':
+                # if the item after is not a number and it's not a '(' and it's not a '~'
+                elif not is_num(after) and after != '(' and after != '~':
                     # deletes the pluses
                     pass
-
+                elif prev in OPERATORS_LIST:
+                    if prev in OPERATOR_FOR_1_OPERAND and prev != '~':
+                        lst.insert(minus_start_index, '+')
+                    else:
+                        # deletes the minuses
+                        pass
                 # else there is a number
                 else:
                     # entering a + instead
@@ -77,12 +81,12 @@ def Reduce_And_Correct_Minuses(lst: list) -> list:
             # else there is an odd amount of minuses
             else:
                 # if there is a number after the minuses
-                if (minus_start_index == 0 or prev == '(') and Is_Num(after):
+                if (minus_start_index == 0 or prev == '(') and is_num(after):
                     # converting the number to its opposite
                     lst[minus_start_index] = -lst[minus_start_index]
 
                 # if the previous is an operator and after is a number
-                elif prev in OPERATORS_LIST and Is_Num(after):
+                elif prev in OPERATORS_LIST and is_num(after):
                     # here there are 2 cases, either the - is counted as unary or binary
                     if prev in OPERATOR_FOR_1_OPERAND and prev != '~':
                         # here the prev is either ! or #
@@ -101,7 +105,7 @@ def Reduce_And_Correct_Minuses(lst: list) -> list:
     return lst
 
 
-def From_String_To_Num(data: str) -> float:
+def from_string_to_num(data: str) -> float:
     """
     this function runs on the chars of the string and turn each of them to a number and puts the number together
     :param data: a string that represents a number
@@ -116,16 +120,16 @@ def From_String_To_Num(data: str) -> float:
     return num
 
 
-def Is_Opernad(data: chr) -> bool:
+def is_operand(data: chr) -> bool:
     """
     this function gets a char and returns if the char represents a digit
     :param data: a char
     :return: if the char is a char that represents a number
     """
-    return data <= '9' and data >= '0'
+    return '0' <= data <= '9'
 
 
-def Is_Num(item) -> bool:
+def is_num(item) -> bool:
     """
     this func returns if an item is of type number
     :param item: gets an item of a list
@@ -134,44 +138,45 @@ def Is_Num(item) -> bool:
     return type(item) is int or type(item) is float
 
 
-def Turn_String_To_List(data: str) -> list:
+def turn_numbers_to_value(lst: list) -> list:
     """
     this func runs on each character in the string and appends it to a list, if a sequence of chars represents
     a number than the func appends the real value of the number to the list and not its chars
-    :param data: it takes the string with no spaces and turns the numbers into their real value and not
-    charcters
+    :param lst: it takes the list with no spaces and turns the numbers into their real value and not
+    chars
     :return: it returns a list with the same order of the expression only that every single num or operator is an
     item in the list so it will be easier to work with
     """
     # this list will help me calculate the expression
-    lst = []
+    new_lst = []
 
     # a helpful sub string that help with converting to a number from string
-    subStr = ""
+    sub_str = ""
 
     # first of we push the string's simplified form to the stack
-    for val in data:
+    for val in lst:
 
-        if Is_Opernad(val):
-            subStr += val
+        # if the value is an operand than connect it to the sub string
+        if is_operand(val):
+            sub_str += val
 
+        # if it's not an operand and the sub_str isn't empty than convert the sub_string into a number
         else:
-            currNum = 0
-            if subStr != "":
-                currNum = From_String_To_Num(subStr)
-                lst.append(currNum)
-            lst.append(val)
-            subStr = ""
+            if sub_str != "":
+                curr_num = from_string_to_num(sub_str)
+                new_lst.append(curr_num)
+            new_lst.append(val)
+            sub_str = ""
 
     # if the last part of the data was a number we need to insert it to the stack
-    if subStr != "":
-        currNum = From_String_To_Num(subStr)
-        lst.append(currNum)
+    if sub_str != "":
+        curr_num = from_string_to_num(sub_str)
+        new_lst.append(curr_num)
 
-    return lst
+    return new_lst
 
 
-def Make_List(expression: str) -> list:
+def make_list(expression: list) -> list:
     """
     this function takes a string that represents a math expression, shrinks it's spaces and minuses
     and turns the number into their real values
@@ -179,13 +184,13 @@ def Make_List(expression: str) -> list:
     :return: a list that represents the same math expression
     """
 
-    # turning the string into a list
-    lst = Turn_String_To_List(expression)
+    # turning the string of operands into their value
+    lst = turn_numbers_to_value(expression)
 
     # after this line all of the minuses will be compressed to one '-' or turned into a '+'
-    lst = Reduce_And_Correct_Minuses(lst)
+    lst = reduce_and_correct_minuses(lst)
 
     # after this line the list will return the numbers with decimal points
-    lst = Make_Decimal_Values(lst)
+    lst = make_decimal_values(lst)
 
     return lst

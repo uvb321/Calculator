@@ -18,11 +18,11 @@ class Operator:
     ORDER = None
 
     # this func is meant to be overridden
-    def Calculate_2_Operands(num1, num2):
+    def calculate_2_operands(num1, num2):
         pass
 
     # this func is meant to be overridden
-    def Calculate_1_Operand(num):
+    def calculate_1_operand(num):
         pass
 
 
@@ -38,7 +38,7 @@ class Add(Operator):
     ORDER = 1
 
     # this func gets two numbers and adds them and returns the result
-    def Calculate_2_Operands(num1: float, num2: float):
+    def calculate_2_operands(num1: float, num2: float):
         return num1 + num2
 
 
@@ -54,7 +54,7 @@ class Sub(Operator):
     ORDER = 1
 
     # this func gets two numbers and subtracts the second from the first and returns the result
-    def Calculate_2_Operands(num1: float, num2: float) -> float:
+    def calculate_2_operands(num1: float, num2: float) -> float:
         return num1 - num2
 
 
@@ -70,7 +70,7 @@ class Mul(Operator):
     ORDER = 2
 
     # this func gets two numbers and multiplies them and returns the result
-    def Calculate_2_Operands(num1: float, num2: float) -> float:
+    def calculate_2_operands(num1: float, num2: float) -> float:
         return num1 * num2
 
 
@@ -86,9 +86,9 @@ class Div(Operator):
     ORDER = 2
 
     # this func gets two numbers and divides the first with the second and returns the result
-    def Calculate_2_Operands(num1: float, num2: float) -> float:
+    def calculate_2_operands(num1: float, num2: float) -> float:
         if num2 == 0:
-            raise DivisionByZeroException("can't divide by zero")
+            raise DivisionOrModuloByZeroException("can't do division by 0")
         return num1 / num2
 
 
@@ -104,23 +104,28 @@ class Pow(Operator):
     ORDER = 3
 
     # this func gets two numbers and powers the first with the second and returns the result
-    def Calculate_2_Operands(num1: float, num2: float) -> float:
-        return pow(num1, num2)
+    def calculate_2_operands(num1: float, num2: float) -> float:
+        try:
+            return pow(num1, num2)
+        except ValueError:
+            raise ComplexNumberException("the result of ^ (power) can't be a complex number")
 
 
 """
 this class is for the % sign
 its order is 4
-there is a modulu function
+there is a modulo function
 the operator will be between two operands num1 % num 2
 """
 
 
-class Modulu(Operator):
+class Modulo(Operator):
     ORDER = 4
 
     # this func gets two numbers and returns the remainder from the division function on the two
-    def Calculate_2_Operands(num1: float, num2: float) -> float:
+    def calculate_2_operands(num1: float, num2: float) -> float:
+        if num2 == 0:
+            raise DivisionOrModuloByZeroException("can't do Modulo by 0")
         return num1 % num2
 
 
@@ -136,7 +141,7 @@ class Max(Operator):
     ORDER = 5
 
     # this func gets two numbers and returns the bigger one out of the two
-    def Calculate_2_Operands(num1: float, num2: float) -> float:
+    def calculate_2_operands(num1: float, num2: float) -> float:
         if num1 > num2:
             return num1
         return num2
@@ -154,7 +159,7 @@ class Min(Operator):
     ORDER = 5
 
     # this func gets two numbers and returns the smaller one out of the two
-    def Calculate_2_Operands(num1: float, num2: float) -> float:
+    def calculate_2_operands(num1: float, num2: float) -> float:
         if num1 < num2:
             return num1
         return num2
@@ -172,7 +177,7 @@ class Avg(Operator):
     ORDER = 5
 
     # this func gets two numbers and returns their average
-    def Calculate_2_Operands(num1: float, num2: float) -> float:
+    def calculate_2_operands(num1: float, num2: float) -> float:
         return (num1 + num2) / 2
 
 
@@ -189,7 +194,7 @@ class Not(Operator):
     ORDER = 6
 
     # this func gets a number and returns the opposite sign of it
-    def Calculate_1_Operand(num: float) -> float:
+    def calculate_1_operand(num: float) -> float:
         return -num
 
 
@@ -201,13 +206,18 @@ the operator will be right of the operand num!
 
 """
 
+# a const to change if the computer can calculate to a different limit of assembly
+CEILING_FOR_ASSEMBLY = 170
+
 
 class Assembly(Operator):
     ORDER = 6
 
     # this func gets a number and returns the  assembly of it
     # works only on a positive natural number
-    def Calculate_1_Operand(num: int) -> int:
+    def calculate_1_operand(num: int) -> int:
+        if num > CEILING_FOR_ASSEMBLY:
+            raise TooHighToCalculateException(f" the ! function can't handle a number over {CEILING_FOR_ASSEMBLY}")
 
         if type(num) == float:
             # getting the number after the decimal point
@@ -247,12 +257,11 @@ class AddDigits(Operator):
     ORDER = 6
 
     # this func gets a num and returns the sum of its digits
-    # works only on a positive number
-    def Calculate_1_Operand(num: float) -> int:
+    def calculate_1_operand(num: float) -> int:
         # checking if the number is negative
+        negative_flag = False
         if num < 0:
-            raise NegativeNumberException("# can't get a negative number")
-
+            negative_flag = True
         # this line will put in places how many digits there are after the decimal point
         places = len(str(num).split('.')[-1])
 
@@ -260,8 +269,17 @@ class AddDigits(Operator):
         for i in range(places):
             num *= 10
 
-        sum = 0
+        # if it was negative in the beginning than making it positive
+        if negative_flag:
+            num *= -1
+
+        # a loop that sums the digits of the number
+        digits_sum = 0
         while num:
-            sum += num % 10
+            digits_sum += num % 10
             num //= 10
-        return sum
+
+        # if it was negative in the beginning than making it negative again
+        if negative_flag:
+            digits_sum *= -1
+        return digits_sum
