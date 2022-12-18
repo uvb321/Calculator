@@ -3,7 +3,7 @@ this module only has 1 func that prints to the screen a welcome message
 """
 
 
-def Welcome_Message():
+def welcome_message():
     print("welcome to Calculator!!!!\n"
           "there are many operators you can use:\n"
           "+ - addition, between two operands x+y\n"

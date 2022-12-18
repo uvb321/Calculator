@@ -1,9 +1,10 @@
-from WelcomeMessage import Welcome_Message
-from MainLoop import Run_Calculator
+from WelcomeMessage import welcome_message
+from MainLoop import run_calculator
+
 
 def main():
-    Welcome_Message()
-    Run_Calculator()
+    welcome_message()
+    run_calculator()
 
 
 if __name__ == '__main__':
