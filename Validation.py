@@ -16,6 +16,8 @@ def is_tilda_valid(lst: list, index: int) -> bool:
             not is_num(lst[index + 1]) and lst[index + 1] != '(' and lst[index + 1] != '-'):
         return False
 
+    # now the function checks if there is another ~ before there is a number and if so
+    # it raises an error
     index += 1
     while index < len(lst):
         if is_num(lst[index]) or lst[index] == '(':

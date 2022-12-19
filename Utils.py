@@ -10,7 +10,9 @@ def make_decimal_values(lst: list) -> list:
     index = 0
     while index < len(lst):
         if lst[index] == '.':
+            # popping out the .
             lst.pop(index)
+            # popping the numbers before and after the .
             before_point = lst.pop(index - 1)
             after_point = lst.pop(index - 1)
             index -= 1
@@ -18,6 +20,7 @@ def make_decimal_values(lst: list) -> list:
                 new_num = float(str(before_point) + '.' + str(after_point))
             except ValueError:
                 raise DotException("the dots are not in a valid order")
+            # inserting the new decimal number to the lst
             lst.insert(index, new_num)
         index += 1
 
