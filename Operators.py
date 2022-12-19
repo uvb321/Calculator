@@ -105,6 +105,8 @@ class Pow(Operator):
 
     # this func gets two numbers and powers the first with the second and returns the result
     def calculate_2_operands(num1: float, num2: float) -> float:
+        if num1 == 0 and num2 == 0:
+            raise OperatorException("can't do 0 in the power of 0.")
         try:
             return pow(num1, num2)
         except ValueError:

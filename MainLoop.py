@@ -3,6 +3,7 @@ from Validation import validate
 from Exceptions import *
 
 QUIT = 'quit'
+EXIT_MESSAGE = "closing Calculator"
 
 
 def run_calculator():
@@ -57,10 +58,16 @@ def run_calculator():
             print("can't get EOF as input")
             break
 
-        except Exception as E:
-            print(E)
+        except KeyboardInterrupt:
+            print("keyboard interrupt occurred")
+            break
+
+        except OSError as OE:
+            print(OE)
+            break
+
         finally:
             print("------------------------------------------\n\n\n")
 
     print("\n\n-----------------------------------------------------------------")
-    print("closing Calculator")
+    print(EXIT_MESSAGE)
