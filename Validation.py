@@ -2,6 +2,29 @@ from Utils import make_list, is_num
 from Dicts_And_Lists import *
 
 
+def is_tilda_valid(lst: list, index: int) -> bool:
+    """
+    this function validates the ~ operator
+    :param lst: a list that represents a math expression
+    :param index: index of the ~ expression
+    :return: true if the ~ operator is valid, else false
+    """
+
+    # if its the last item or the item after it isn't a number and it isn't a '('
+    # and it's not a '-' than it in the wrong place
+    if index + 1 == len(lst) or (
+            not is_num(lst[index + 1]) and lst[index + 1] != '(' and lst[index + 1] != '-'):
+        return False
+
+    index += 1
+    while index < len(lst):
+        if is_num(lst[index]) or lst[index] == '(':
+            return True
+        elif lst[index] == '~':
+            return False
+        index += 1
+
+
 def check_for_wrong_input(expression: list):
     """
     this function runs a loop that checks each char
@@ -65,13 +88,12 @@ def validate_operators(lst: list):
                         raise OperatorException(
                             f"the {item} in the {index + 1} place does not come after an expression")
 
+                # ~ needs to be validated separately
                 elif item == '~':
-                    # if its the last item or the item after it isn't a number and it isn't a '(' than it in the
-                    # wrong place
-                    if index + 1 == len(lst) or (
-                            not is_num(lst[index + 1]) and lst[index + 1] != '(' and lst[index + 1] != '-'):
+                    if not is_tilda_valid(lst, index):
                         raise OperatorException(
                             f"the {item} in the {index + 1} place does not come before an expression")
+
             # else its a regular operator and it takes 2 operands
             else:
                 if index + 1 == len(lst):
@@ -87,7 +109,6 @@ def validate_operators(lst: list):
                     if (not is_num(prev) and prev != ')' and prev not in OPERATORS_LIST) or (
                             not is_num(after) and after != '(' and after != '-' and after != '~'):
                         raise OperatorException(f"the {item} in the {index + 1} place must take 2 operands")
-
 
         index += 1
 

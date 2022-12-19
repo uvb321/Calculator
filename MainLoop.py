@@ -57,8 +57,6 @@ def run_calculator():
             print("can't get EOF as input")
             break
 
-        except Exception as E:
-            print(E)
         finally:
             print("------------------------------------------\n\n\n")
 
